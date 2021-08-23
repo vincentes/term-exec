@@ -1,9 +1,6 @@
 package com.termexec.app;
 
-import com.termexec.app.domain.CommandExecutor;
-import com.termexec.app.domain.CommandResult;
-import com.termexec.app.domain.User;
-import com.termexec.app.domain.UserRepository;
+import com.termexec.app.domain.*;
 
 import java.awt.*;
 import java.io.Console;
@@ -19,9 +16,18 @@ public class Main {
 		boolean executing = true;
 		User user = UserRepository.add("root");
 		UserRepository.su(user.getUsername());
+		NavigableRepository.mkdir("/");
 		while(executing) {
 			System.out.print(UserRepository.getCurrentUser().getUsername() + "@$_ ");
-			CommandResult result = CommandExecutor.exec(scanner.nextLine());
+			Execution result = CommandExecutor.exec(scanner.nextLine());
+			switch (result.getResult()) {
+				case NOT_ENOUGH_ARGS:
+					System.out.println("El comando requiere de dos parametros.");
+					break;
+				case INEXISTENT_COMMAND:
+					System.out.println("No se reconoce el comando introducido.");
+					break;
+			}
 		}
     }
 }
