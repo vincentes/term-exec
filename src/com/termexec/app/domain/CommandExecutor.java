@@ -44,10 +44,22 @@ public class CommandExecutor {
                 mkdir(tokens[1]);
                 break;
             case LS:
-                ls();
+                ls(tokens[1]);
                 break;
             case TOUCH:
                 touch(tokens[1]);
+                break;
+            case ECHO:
+                String content = line.split("\"")[1];
+                String path = line.split(" >> ")[1];
+                path = path.split(".txt")[0];
+                echo(content, path);
+                break;
+            case CAT:
+                cat(tokens[1]);
+                break;
+            case CD:
+                cd(tokens[1]);
                 break;
         }
 
@@ -66,16 +78,26 @@ public class CommandExecutor {
         NavigableRepository.touch(fileName);
     }
 
-    private static void ls() {
-        for (Navigable node : NavigableRepository.ls()) {
-            System.out.println(node.getPermissions()
-                    + "\t" + node.getAuthor()
-                    + "\t" + monthFormat.format(node.getDateTime())
-                    + "\t" + dayFormat.format(node.getDateTime())
-                    + "\t" + timeFormat.format(node.getDateTime())
-                    + "\t" + node.getName()) ;
+    private static void echo(String content, String path) { NavigableRepository.echo(content,path); }
+
+    private static void cat(String fileName) { NavigableRepository.cat(fileName); }
+
+    private static void ls(String command) {
+        if(command.equals("-l")) {
+            for (Navigable node : NavigableRepository.ls()) {
+                System.out.println(node.getPermissions()
+                        + "\t" + node.getAuthor()
+                        + "\t" + monthFormat.format(node.getDateTime())
+                        + "\t" + dayFormat.format(node.getDateTime())
+                        + "\t" + timeFormat.format(node.getDateTime())
+                        + "\t" + node.getName());
+            }
+        }else{
+            System.out.println("Ingrese un comando válido");
         }
     }
+
+    private static void cd(String path){ NavigableRepository.cd(path); }
 
     private static void useradd(String username) {
         User user = UserRepository.add(username);

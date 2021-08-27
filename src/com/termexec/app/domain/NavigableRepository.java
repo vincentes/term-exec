@@ -68,8 +68,23 @@ public class NavigableRepository {
         return null;
     }
 
-    public static void echo(String path) {
+    public static void echo(String content, String path) {
+        File file = getFile(path);
+        file.writeLine(content);
+    }
 
+    public static String cat(String fileName) {
+        File file = getFile(fileName);
+        return file.getContent();
+    }
+
+    public static void cd(String line){
+        if (line.equals("..")){
+            setCurrentFolder(currentFolder.getParent());
+        }else {
+            String[] path = line.split("/");
+            setCurrentFolder(getFolder(Arrays.copyOf(path,path.length -1)));
+        }
     }
 
     public static void touch(String fileName) {

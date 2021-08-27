@@ -22,7 +22,7 @@ public class Main {
 			Execution result = CommandExecutor.exec(scanner.nextLine());
 			switch (result.getResult()) {
 				case NOT_ENOUGH_ARGS:
-					System.out.println("El comando requiere de dos parametros.");
+					System.out.println("El comando requiere más parametros.");
 					break;
 				case INEXISTENT_COMMAND:
 					System.out.println("No se reconoce el comando introducido.");

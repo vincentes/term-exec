@@ -9,8 +9,10 @@ public enum Command {
     MKDIR(1),
     TOUCH(1),
     ECHO(1),
-    LS (0),
-    CAT(1);
+    LS (1),
+    CAT(1),
+    CD(1);
+
 
     private final int numberOfArgs;
 
