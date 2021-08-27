@@ -1,9 +1,13 @@
 package com.termexec.app.domain;
 
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 public class CommandExecutor {
     private static final Scanner scanner = new Scanner(System.in);
+    private static final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+    private static final SimpleDateFormat monthFormat = new SimpleDateFormat("MMM");
+    private static final SimpleDateFormat dayFormat = new SimpleDateFormat("d");
 
     public static Execution exec(String line) {
         String[] tokens = line.split(" ");
@@ -42,6 +46,9 @@ public class CommandExecutor {
             case LS:
                 ls();
                 break;
+            case TOUCH:
+                touch(tokens[1]);
+                break;
         }
 
         return new Execution(CommandResult.OK, command);
@@ -55,9 +62,18 @@ public class CommandExecutor {
         NavigableRepository.mkdir(folderName);
     }
 
+    private static void touch(String fileName) {
+        NavigableRepository.touch(fileName);
+    }
+
     private static void ls() {
-        for (Navigable file:NavigableRepository.ls()) {
-            System.out.println(file.getName());
+        for (Navigable node : NavigableRepository.ls()) {
+            System.out.println(node.getPermissions()
+                    + "\t" + node.getAuthor()
+                    + "\t" + monthFormat.format(node.getDateTime())
+                    + "\t" + dayFormat.format(node.getDateTime())
+                    + "\t" + timeFormat.format(node.getDateTime())
+                    + "\t" + node.getName()) ;
         }
     }
 

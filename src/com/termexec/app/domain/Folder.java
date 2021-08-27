@@ -6,6 +6,16 @@ import java.util.List;
 public class Folder extends Navigable {
     private List<Navigable> children = new ArrayList<>();
 
+
+    public Folder(User user) {
+        super(user);
+    }
+
+    public Folder(User user, String name) {
+        super(user);
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

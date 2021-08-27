@@ -16,7 +16,7 @@ public class Main {
 		boolean executing = true;
 		User user = UserRepository.add("root");
 		UserRepository.su(user.getUsername());
-		NavigableRepository.mkdir("");
+		NavigableRepository.init();
 		while(executing) {
 			System.out.print(UserRepository.getCurrentUser().getUsername() + "@$_ ");
 			Execution result = CommandExecutor.exec(scanner.nextLine());

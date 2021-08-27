@@ -3,6 +3,10 @@ package com.termexec.app.domain;
 public class File extends Navigable {
     private String content;
 
+    public File(User user) {
+        super(user);
+    }
+
     public void write(String txt) {
         content += txt;
     }
@@ -18,4 +22,10 @@ public class File extends Navigable {
     public void setContent(String content) {
         this.content = content;
     }
+
+    @Override
+    public String getName() {
+        return super.getName() + ".txt";
+    }
+
 }
