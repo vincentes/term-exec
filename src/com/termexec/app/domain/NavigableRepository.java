@@ -1,20 +1,32 @@
 package com.termexec.app.domain;
 
+import java.util.List;
+
 public class NavigableRepository {
 
     private static Folder root = new Folder();
     private static Folder currentFolder = new Folder();
 
     public static String pwd() {
-        return currentFolder.getName();
+        Folder folder = currentFolder;
+        String route = "/";
+        while (folder.getParent() != null)
+        {
+            route = folder.getParent() + "/" + route;
+            folder = folder.getParent();
+        }
+        return route;
     }
 
     public static Folder mkdir(String name) {
         Folder folder = new Folder();
         folder.setName(name);
         currentFolder.addChild(folder);
-        currentFolder = folder;
         return folder;
+    }
+
+    public static List<Navigable> ls() {
+        return currentFolder.getChildren();
     }
 
     public static void touch(String fileName) {

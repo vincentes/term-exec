@@ -4,16 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Folder extends Navigable {
-    private Navigable parent;
     private List<Navigable> children = new ArrayList<>();
-
-    public Navigable getParent() {
-        return parent;
-    }
-
-    public void setParent(Navigable parent) {
-        this.parent = parent;
-    }
 
     public String getName() {
         return name;

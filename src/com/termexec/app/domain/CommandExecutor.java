@@ -36,13 +36,29 @@ public class CommandExecutor {
             case PWD:
                 pwd();
                 break;
+            case MKDIR:
+                mkdir(tokens[1]);
+                break;
+            case LS:
+                ls();
+                break;
         }
 
         return new Execution(CommandResult.OK, command);
     }
 
     private static void pwd() {
-        System.out.println(NavigableRepository.getCurrentFolder().getName());
+        System.out.println(NavigableRepository.pwd());
+    }
+
+    private static void mkdir(String folderName) {
+        NavigableRepository.mkdir(folderName);
+    }
+
+    private static void ls() {
+        for (Navigable file:NavigableRepository.ls()) {
+            System.out.println(file.getName());
+        }
     }
 
     private static void useradd(String username) {

@@ -8,7 +8,8 @@ public enum Command {
     PWD(0),
     MKDIR(1),
     TOUCH(1),
-    ECHO(1);
+    ECHO(1),
+    LS (0);
 
     private final int numberOfArgs;
 
