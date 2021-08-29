@@ -5,6 +5,7 @@ public class File extends Navigable {
 
     public File(User user) {
         super(user);
+        content = "";
     }
 
     public void write(String txt) {
@@ -12,7 +13,7 @@ public class File extends Navigable {
     }
 
     public void writeLine(String txt) {
-        content += "\n" + txt;
+        content += txt + "\n";
     }
 
     public String getContent() {
@@ -25,7 +26,11 @@ public class File extends Navigable {
 
     @Override
     public String getName() {
-        return super.getName() + ".txt";
+        if(super.getName().endsWith(".txt")) {
+            return super.getName();
+        } else {
+            return super.getName() + ".txt";
+        }
     }
 
 }

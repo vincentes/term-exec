@@ -11,7 +11,8 @@ public enum Command {
     ECHO(1),
     LS (1),
     CAT(1),
-    CD(1);
+    CD(1),
+    RM(1);
 
 
     private final int numberOfArgs;

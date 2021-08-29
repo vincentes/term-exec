@@ -1,7 +1,9 @@
 package com.termexec.app.domain;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 public class NavigableRepository {
 
@@ -10,18 +12,33 @@ public class NavigableRepository {
 
     public static String pwd() {
         Folder folder = currentFolder;
-        String route = "/";
+        String route = "";
+        Stack<String> directories = new Stack<>();
+        directories.push(folder.getName());
         while (folder.getParent() != null)
         {
-            route = folder.getParent() + "/" + route;
             folder = folder.getParent();
+            directories.push(folder.getName());
         }
+
+        route += directories.pop() + "/";
+        while(!directories.isEmpty()) {
+            route += directories.pop() + "/";
+        }
+
         return route;
+
+    }
+
+    public static void rm(String fileName) {
+        File file = getFileByName(fileName);
+        currentFolder.getChildren().remove(file);
     }
 
     public static Folder mkdir(String name) {
         Folder folder = new Folder(UserRepository.getCurrentUser());
         folder.setName(name);
+        folder.setParent(currentFolder);
         currentFolder.addChild(folder);
         return folder;
     }
@@ -37,6 +54,7 @@ public class NavigableRepository {
             for(Navigable navigable : currentFolder.getChildren()) {
                 if (navigable instanceof Folder && navigable.getName().equals(token)) {
                     foundNext = true;
+                    current = (Folder) navigable;
                     break;
                 }
             }
@@ -69,6 +87,10 @@ public class NavigableRepository {
     }
 
     public static File getFileByName (String fileName) {
+        if(!fileName.endsWith(".txt")) {
+            return null;
+        }
+
         for(Navigable navigable : currentFolder.getChildren()) {
             if(navigable.getName().equals(fileName)) {
                 return (File) navigable;
@@ -77,13 +99,20 @@ public class NavigableRepository {
         return null;
     }
 
-    public static void echo(String content, String fileName) {
+    public static void echo(String content, String fileName) throws FileNotFoundException {
         File file = getFileByName(fileName);
+        if(file == null) {
+            throw new FileNotFoundException("The file was not found.");
+        }
+
         file.writeLine(content);
     }
 
-    public static String cat(String fileName) {
-        File file = getFile(fileName);
+    public static String cat(String fileName) throws FileNotFoundException {
+        File file = getFileByName(fileName);
+        if(file == null) {
+            throw new FileNotFoundException(fileName + " was not found.");
+        }
         return file.getContent();
     }
 
@@ -92,7 +121,7 @@ public class NavigableRepository {
             setCurrentFolder(currentFolder.getParent());
         }else {
             String[] path = line.split("/");
-            setCurrentFolder(getFolder(Arrays.copyOf(path,path.length -1)));
+            setCurrentFolder(getFolder(path));
         }
     }
 

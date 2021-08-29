@@ -35,4 +35,9 @@ public class Folder extends Navigable {
     public boolean addChild(Navigable navigable) {
         return children.add(navigable);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

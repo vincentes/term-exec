@@ -1,7 +1,10 @@
 package com.termexec.app.domain;
 
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
+
+import static com.termexec.app.domain.NavigableRepository.rm;
 
 public class CommandExecutor {
     private static final Scanner scanner = new Scanner(System.in);
@@ -52,7 +55,7 @@ public class CommandExecutor {
             case ECHO:
                 String content = line.split("\"")[1];
                 String path = line.split(" >> ")[1];
-                path = path.split(".txt")[0];
+//                path = path.split(".txt")[0];
                 echo(content, path);
                 break;
             case CAT:
@@ -60,6 +63,9 @@ public class CommandExecutor {
                 break;
             case CD:
                 cd(tokens[1]);
+                break;
+            case RM:
+                rm(tokens[1]);
                 break;
         }
 
@@ -78,9 +84,21 @@ public class CommandExecutor {
         NavigableRepository.touch(fileName);
     }
 
-    private static void echo(String content, String path) { NavigableRepository.echo(content,path); }
+    private static void echo(String content, String path) {
+        try {
+            NavigableRepository.echo(content,path);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
-    private static void cat(String fileName) { NavigableRepository.cat(fileName); }
+    private static void cat(String fileName) {
+        try {
+            System.out.println(NavigableRepository.cat(fileName));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static void ls(String command) {
         if(command.equals("-l")) {
