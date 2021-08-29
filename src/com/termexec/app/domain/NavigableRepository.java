@@ -68,8 +68,17 @@ public class NavigableRepository {
         return null;
     }
 
-    public static void echo(String content, String path) {
-        File file = getFile(path);
+    public static File getFileByName (String fileName) {
+        for(Navigable navigable : currentFolder.getChildren()) {
+            if(navigable.getName().equals(fileName)) {
+                return (File) navigable;
+            }
+        }
+        return null;
+    }
+
+    public static void echo(String content, String fileName) {
+        File file = getFileByName(fileName);
         file.writeLine(content);
     }
 
@@ -79,7 +88,7 @@ public class NavigableRepository {
     }
 
     public static void cd(String line){
-        if (line.equals("..")){
+        if (line.equals("..") && !currentFolder.equals(root)){
             setCurrentFolder(currentFolder.getParent());
         }else {
             String[] path = line.split("/");
