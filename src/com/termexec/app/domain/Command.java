@@ -12,7 +12,9 @@ public enum Command {
     LS (1),
     CAT(1),
     CD(1),
-    RM(1);
+    RM(1),
+    CHMOD(2),
+    CHOWN(2);
 
 
     private final int numberOfArgs;

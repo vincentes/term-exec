@@ -1,6 +1,7 @@
 package com.termexec.app.domain;
 
 import java.io.FileNotFoundException;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
@@ -66,6 +67,12 @@ public class CommandExecutor {
                 break;
             case RM:
                 rm(tokens[1]);
+                break;
+            case CHOWN:
+                chown(tokens[1], tokens[2]);
+                break;
+            case CHMOD:
+                chmod(tokens[1],tokens[2]);
                 break;
         }
 
@@ -174,5 +181,17 @@ public class CommandExecutor {
             }
         }
         return null;
+    }
+
+    private static void chown(String userName, String fileName){
+        try {
+            NavigableRepository.chown(userName,fileName);
+        } catch (FileNotFoundException | UserPrincipalNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void chmod(String permission, String file) {
+
     }
 }

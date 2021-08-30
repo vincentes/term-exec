@@ -1,6 +1,7 @@
 package com.termexec.app.domain;
 
 import java.io.FileNotFoundException;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
@@ -129,6 +130,24 @@ public class NavigableRepository {
         File file = new File(UserRepository.getCurrentUser());
         file.setName(fileName);
         currentFolder.addChild(file);
+    }
+
+    public static void chown (String username, String fileName) throws FileNotFoundException, UserPrincipalNotFoundException {
+        File file = getFileByName(fileName);
+        if (file == null){
+            throw new FileNotFoundException(fileName + " was not found.");
+        }else {
+            User user = UserRepository.find(username);
+            if(user == null) {
+                throw new UserPrincipalNotFoundException(username + " does not exists.");
+            } else {
+                file.setAuthor(user);
+            }
+        }
+    }
+
+    public static void chmod (String permissions, String fileName){
+
     }
 
     public static void init() {
