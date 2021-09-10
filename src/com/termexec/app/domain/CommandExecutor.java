@@ -1,8 +1,13 @@
 package com.termexec.app.domain;
 
+import jdk.nashorn.internal.ir.CallNode;
+
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 
 import static com.termexec.app.domain.NavigableRepository.rm;
 
@@ -13,7 +18,27 @@ public class CommandExecutor {
     private static final SimpleDateFormat dayFormat = new SimpleDateFormat("d");
 
     public static Execution exec(String line) {
-        String[] tokens = line.split(" ");
+        String[] commands = line.split("\\|");
+        if(commands.length > 1) {
+            History.silent = true;
+        }
+
+        Stack<String> concat = new Stack<>();
+        for(String command : commands) {
+            Execution e = eval(command, concat);
+            History.push(line);
+            if(e.getResult() != CommandResult.OK) {
+                return e;
+            }
+        }
+
+        return new Execution(CommandResult.OK);
+    }
+
+    public static Execution eval(String line, Stack<String> concat)
+    {
+        String[] tokens = line.trim().split(" ");
+
         if(tokens.length < 1) {
             return new Execution(CommandResult.NO_COMMAND_FOUND);
         }
@@ -67,13 +92,67 @@ public class CommandExecutor {
             case RM:
                 rm(tokens[1]);
                 break;
+            case HISTORY:
+                history();
+                break;
+            case GREP:
+                grep(line);
+                break;
+            case MV:
+                mv(tokens[1], tokens[2]);
+                break;
+        }
+        return new Execution(CommandResult.OK, command);
+    }
+
+    private static void mv(String origin, String destination) {
+        File originFile = NavigableRepository.getFile(origin);
+        if(originFile == null) {
+            System.out.println("El archivo origen no existe.");
+            return;
+        }
+        Folder originFolder = NavigableRepository.getFolderExcludeFileName(origin);
+        Folder destinationFolder = NavigableRepository.getFolder(origin);
+        if(destinationFolder == null) {
+            System.out.println("La carpeta destino no existe.");
+            return;
+        }
+        originFile.getParent().remove(originFile);
+        originFile.setParent(destinationFolder);
+        destinationFolder.addChild(originFile);
+
+    }
+
+    private static void grep(String line) {
+        List<String> print = new ArrayList<>();
+        String[] lines = History.lastCommandText.split("\n");
+        String query = line.trim().split(" ")[1];
+
+        for(String l : lines) {
+            if(l.contains(query)) {
+                print.add(l);
+            }
         }
 
-        return new Execution(CommandResult.OK, command);
+        for(String p : print) {
+            System.out.println(p);
+        }
     }
 
     private static void pwd() {
         System.out.println(NavigableRepository.pwd());
+    }
+
+    private static void history() {
+        String historyText = "";
+        for(String command : History.getCommands()) {
+            if(!History.silent) {
+                System.out.println(command);
+            }
+            historyText += command + "\n";
+        }
+
+        History.register(historyText);
     }
 
     private static void mkdir(String folderName) {

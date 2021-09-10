@@ -12,8 +12,11 @@ public enum Command {
     LS (1),
     CAT(1),
     CD(1),
-    RM(1);
-
+    RM(1),
+    HISTORY(0),
+    GREP(1),
+    MV(2),
+    CP(2);
 
     private final int numberOfArgs;
 

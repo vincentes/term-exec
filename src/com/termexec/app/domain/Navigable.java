@@ -2,6 +2,7 @@ package com.termexec.app.domain;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Objects;
 
 public class Navigable {
     protected String name;
@@ -58,5 +59,19 @@ public class Navigable {
 
     public String getPermissions() {
         return config.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Navigable navigable = (Navigable) o;
+        return name.equals(navigable.name) &&
+                Objects.equals(parent, navigable.parent);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, parent);
     }
 }

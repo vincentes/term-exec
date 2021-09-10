@@ -32,6 +32,10 @@ public class Folder extends Navigable {
         this.children = children;
     }
 
+    public boolean remove(Object o) {
+        return children.remove(o);
+    }
+
     public boolean addChild(Navigable navigable) {
         return children.add(navigable);
     }

@@ -47,7 +47,21 @@ public class NavigableRepository {
         return currentFolder.getChildren();
     }
 
+    public static Folder getFolder(String path) {
+        if(!path.startsWith("/")) {
+            if (path.endsWith("/")) {
+                path = path.substring(0, path.length() - 1);
+            }
+
+            String[] tokens = path.split("/");
+            String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length);
+            return getFolder(tokensDirectory);
+        }
+        return null;
+    }
+
     public static Folder getFolder(String[] tokens) {
+
         Folder current = currentFolder;
         for(String token : tokens) {
             boolean foundNext = false;
@@ -73,7 +87,7 @@ public class NavigableRepository {
             }
 
             String[] tokens = path.split("/");
-            String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length);
+            String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length - 1);
             Folder folder = getFolder(tokensDirectory);
             assert folder != null;
             for(Navigable navigable : folder.getChildren()) {
@@ -152,4 +166,13 @@ public class NavigableRepository {
         NavigableRepository.currentFolder = currentFolder;
     }
 
+    public static String getFileNameFromPath(String path) {
+        String[] tokens = path.split("/");
+        return tokens[tokens.length - 1];
+    }
+
+    public static Folder getFolderExcludeFileName(String origin) {
+        origin = origin.substring(0, origin.indexOf(getFileNameFromPath(origin)));
+        return getFolder(origin);
+    }
 }
