@@ -3,6 +3,7 @@ package com.termexec.app.domain;
 import jdk.nashorn.internal.ir.CallNode;
 
 import java.io.FileNotFoundException;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +101,11 @@ public class CommandExecutor {
                 break;
             case MV:
                 mv(tokens[1], tokens[2]);
+            case CHOWN:
+                chown(tokens[1], tokens[2]);
+                break;
+            case CHMOD:
+                chmod(tokens[1],tokens[2]);
                 break;
         }
         return new Execution(CommandResult.OK, command);
@@ -253,5 +259,17 @@ public class CommandExecutor {
             }
         }
         return null;
+    }
+
+    private static void chown(String userName, String fileName){
+        try {
+            NavigableRepository.chown(userName,fileName);
+        } catch (FileNotFoundException | UserPrincipalNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void chmod(String permission, String file) {
+
     }
 }

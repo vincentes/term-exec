@@ -16,7 +16,10 @@ public enum Command {
     HISTORY(0),
     GREP(1),
     MV(2),
-    CP(2);
+    CP(2),
+    CHMOD(2),
+    CHOWN(2);
+
 
     private final int numberOfArgs;
 
