@@ -17,6 +17,11 @@ public class Main {
 		User user = UserRepository.add("root");
 		UserRepository.su(user.getUsername());
 		NavigableRepository.init();
+		NavigableRepository.mkdir("a");
+		NavigableRepository.mkdir("b");
+		NavigableRepository.cd("a");
+		NavigableRepository.touch("archivoA.txt");
+		NavigableRepository.cd("..");
 		while(executing) {
 			System.out.print(UserRepository.getCurrentUser().getUsername() + "@$_ ");
 			Execution result = CommandExecutor.exec(scanner.nextLine());

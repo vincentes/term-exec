@@ -1,7 +1,5 @@
 package com.termexec.app.domain;
 
-import jdk.nashorn.internal.ir.CallNode;
-
 import java.io.FileNotFoundException;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.text.SimpleDateFormat;
@@ -101,6 +99,7 @@ public class CommandExecutor {
                 break;
             case MV:
                 mv(tokens[1], tokens[2]);
+                break;
             case CHOWN:
                 chown(tokens[1], tokens[2]);
                 break;
@@ -113,12 +112,12 @@ public class CommandExecutor {
 
     private static void mv(String origin, String destination) {
         File originFile = NavigableRepository.getFile(origin);
+        System.out.println(originFile.toString());
         if(originFile == null) {
             System.out.println("El archivo origen no existe.");
             return;
         }
-        Folder originFolder = NavigableRepository.getFolderExcludeFileName(origin);
-        Folder destinationFolder = NavigableRepository.getFolder(origin);
+        Folder destinationFolder = NavigableRepository.getFolder(destination);
         if(destinationFolder == null) {
             System.out.println("La carpeta destino no existe.");
             return;
@@ -270,6 +269,18 @@ public class CommandExecutor {
     }
 
     private static void chmod(String permission, String file) {
-
+        try {
+            int permissionInt = Integer.parseInt(permission.split("")[0]);
+            if(permission.split("").length != 3) {
+                System.out.println("Debe ingresar los permisos correspondientes a usuario, grupo y directorio");
+            }
+            if(PermissionConfig.isOctalValue(permissionInt)) {
+                NavigableRepository.chmod(permissionInt, file);
+            } else {
+                System.out.println("Ingrese un permiso valido");
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }

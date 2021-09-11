@@ -33,4 +33,10 @@ public class File extends Navigable {
         }
     }
 
+    @Override
+    public String toString() {
+        return "File{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

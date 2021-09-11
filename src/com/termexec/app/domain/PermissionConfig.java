@@ -23,9 +23,12 @@ public class PermissionConfig {
     }
 
     private void validateOctalValue() {
-        assert(octalValue >= 0 && octalValue <= 7);
+        assert(isOctalValue(this.octalValue));
     }
 
+    public static boolean isOctalValue(int octalValue) {
+        return octalValue >= 0 && octalValue <= 7;
+    }
     @Override
     public String toString() {
         switch(octalValue) {

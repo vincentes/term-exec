@@ -49,16 +49,12 @@ public class NavigableRepository {
     }
 
     public static Folder getFolder(String path) {
-        if(!path.startsWith("/")) {
-            if (path.endsWith("/")) {
-                path = path.substring(0, path.length() - 1);
-            }
-
-            String[] tokens = path.split("/");
-            String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length);
-            return getFolder(tokensDirectory);
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
         }
-        return null;
+        String[] tokens = path.split("/");
+        String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length);
+        return getFolder(tokens);
     }
 
     public static Folder getFolder(String[] tokens) {
@@ -160,8 +156,13 @@ public class NavigableRepository {
         }
     }
 
-    public static void chmod (String permissions, String fileName){
-
+    public static void chmod (int permission, String fileName) throws FileNotFoundException {
+        Navigable navigable = getFileByName(fileName);
+        if (navigable == null){
+            throw new FileNotFoundException(fileName + " was not found.");
+        }else{
+            navigable.setConfig(new PermissionConfig(permission));
+        }
     }
 
     public static void init() {
@@ -191,7 +192,7 @@ public class NavigableRepository {
     }
 
     public static Folder getFolderExcludeFileName(String origin) {
-        origin = origin.substring(0, origin.indexOf(getFileNameFromPath(origin)));
+        //origin = origin.substring(0, origin.indexOf(getFileNameFromPath(origin)));
         return getFolder(origin);
     }
 }
