@@ -12,7 +12,7 @@ public class Navigable {
     private PermissionConfig config;
 
     public Navigable(User user) {
-        this.config = new PermissionConfig(7);
+        this.config = new PermissionConfig(7,7,7);
         this.dateTime = new Date();
         this.author = user;
     }

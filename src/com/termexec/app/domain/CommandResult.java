@@ -5,6 +5,7 @@ public enum CommandResult {
     NOT_ENOUGH_ARGS,
     NO_COMMAND_FOUND,
     INEXISTENT_COMMAND,
+    NOT_ROOT,
     OK,
     OTHER
 }

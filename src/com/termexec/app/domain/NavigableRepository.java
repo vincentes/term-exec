@@ -33,6 +33,18 @@ public class NavigableRepository {
 
     public static void rm(String fileName) {
         File file = getFileByName(fileName);
+        if(UserRepository.getCurrentUser().equals(file.getAuthor())) {
+            if(!file.getConfig().canOwnerWrite()) {
+                System.out.println("rm: " + file.getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!file.getConfig().canOthersWrite()) {
+                System.out.println("rm: " + file.getName() + ": Permission denied");
+                return;
+            }
+        }
+
         currentFolder.getChildren().remove(file);
     }
 
@@ -40,6 +52,19 @@ public class NavigableRepository {
         Folder folder = new Folder(UserRepository.getCurrentUser());
         folder.setName(name);
         folder.setParent(currentFolder);
+
+        if(UserRepository.getCurrentUser().equals(folder.getAuthor())) {
+            if(!folder.getConfig().canOwnerWrite()) {
+                System.out.println("mkdir: " + folder.getName() + ": Permission denied");
+                return folder;
+            }
+        } else {
+            if(!folder.getConfig().canOthersWrite()) {
+                System.out.println("mkdir: " + folder.getName() + ": Permission denied");
+                return folder;
+            }
+        }
+
         currentFolder.addChild(folder);
         return folder;
     }
@@ -49,17 +74,30 @@ public class NavigableRepository {
     }
 
     public static Folder getFolder(String path) {
+        boolean goBack = false;
+        if(path.startsWith("..")) {
+            goBack = true;
+            path = path.substring(2);
+        }
+
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
         String[] tokens = path.split("/");
-        String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length);
-        return getFolder(tokens);
+        return getFolder(tokens, goBack);
     }
 
-    public static Folder getFolder(String[] tokens) {
+    public static Folder getFolder(String[] tokens, boolean goBack) {
+        Folder current;
+        if(goBack) {
+            current = currentFolder.parent;
+            if(tokens[0].equals("")) {
+                return current;
+            }
+        } else {
+            current = currentFolder;
+        }
 
-        Folder current = currentFolder;
         for(String token : tokens) {
             boolean foundNext = false;
             for(Navigable navigable : currentFolder.getChildren()) {
@@ -78,6 +116,13 @@ public class NavigableRepository {
     }
 
     public static File getFile(String path) {
+        boolean goBack = false;
+        if(path.startsWith("..")) {
+            goBack = true;
+            path = path.substring(1);
+        }
+
+
         if(!path.startsWith("/")) {
             if(path.endsWith("/")) {
                 path = path.substring(0, path.length() - 1);
@@ -85,7 +130,7 @@ public class NavigableRepository {
 
             String[] tokens = path.split("/");
             String[] tokensDirectory = Arrays.copyOfRange(tokens, 0, tokens.length - 1);
-            Folder folder = getFolder(tokensDirectory);
+            Folder folder = getFolder(tokensDirectory, goBack);
             assert folder != null;
             for(Navigable navigable : folder.getChildren()) {
                 if(navigable instanceof File && navigable.getName().equals(tokens[tokens.length - 1])) {
@@ -112,6 +157,18 @@ public class NavigableRepository {
 
     public static void echo(String content, String fileName) throws FileNotFoundException {
         File file = getFileByName(fileName);
+        if(UserRepository.getCurrentUser().equals(file.getAuthor())) {
+            if(!file.getConfig().canOwnerWrite()) {
+                System.out.println("echo: " + file.getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!file.getConfig().canOthersWrite()) {
+                System.out.println("echo: " + file.getName() + ": Permission denied");
+                return;
+            }
+        }
+
         if(file == null) {
             throw new FileNotFoundException("The file was not found.");
         }
@@ -121,9 +178,23 @@ public class NavigableRepository {
 
     public static String cat(String fileName) throws FileNotFoundException {
         File file = getFileByName(fileName);
+
+        if(UserRepository.getCurrentUser().equals(file.getAuthor())) {
+            if(!file.getConfig().canOwnerRead() || !file.getConfig().canOwnerRead()) {
+                System.out.println("cat: " + file.getName() + ": Permission denied");
+                return "";
+            }
+        } else {
+            if(!file.getConfig().canOthersRead() || !file.getConfig().canOthersExecute()) {
+                System.out.println("cat: " + file.getName() + ": Permission denied");
+                return "";
+            }
+        }
+
         if(file == null) {
             throw new FileNotFoundException(fileName + " was not found.");
         }
+
         return file.getContent();
     }
 
@@ -132,41 +203,82 @@ public class NavigableRepository {
             setCurrentFolder(currentFolder.getParent());
         }else {
             String[] path = line.split("/");
-            setCurrentFolder(getFolder(path));
+
+            Folder folder = getFolder(path, false);
+            if(folder == null) {
+                System.out.println("Folder not found.");
+                return;
+            }
+            if(UserRepository.getCurrentUser().equals(folder.getAuthor())) {
+                if(!folder.getConfig().canOwnerExecute()) {
+                    System.out.println("cd: " + folder.getName() + ": Permission denied");
+                    return;
+                }
+            } else {
+                if(!folder.getConfig().canOthersExecute()) {
+                    System.out.println("cd: " + folder.getName() + ": Permission denied");
+                    return;
+                }
+            }
+
+            setCurrentFolder(folder);
         }
     }
 
     public static void touch(String fileName) {
+        if(UserRepository.getCurrentUser().equals(NavigableRepository.getCurrentFolder().getAuthor())) {
+            if(!NavigableRepository.getCurrentFolder().getConfig().canOwnerWrite()) {
+                System.out.println("touch: " + NavigableRepository.getCurrentFolder().getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!NavigableRepository.getCurrentFolder().getConfig().canOthersWrite()) {
+                System.out.println("touch: " + NavigableRepository.getCurrentFolder().getName() + ": Permission denied");
+                return;
+            }
+        }
+
         File file = new File(UserRepository.getCurrentUser());
         file.setName(fileName);
+        file.setParent(currentFolder);
         currentFolder.addChild(file);
     }
 
     public static void chown (String username, String fileName) throws FileNotFoundException, UserPrincipalNotFoundException {
         File file = getFileByName(fileName);
         if (file == null){
-            throw new FileNotFoundException(fileName + " was not found.");
+            System.out.println(fileName + " was not found.");
+            return;
         }else {
             User user = UserRepository.find(username);
             if(user == null) {
-                throw new UserPrincipalNotFoundException(username + " does not exists.");
+                System.out.println(username + " does not exists.");
+                return;
             } else {
                 file.setAuthor(user);
             }
         }
     }
 
-    public static void chmod (int permission, String fileName) throws FileNotFoundException {
+    public static void chmod (int file, int group, int others, String fileName) throws FileNotFoundException {
+        PermissionConfig config = new PermissionConfig(file, group, others);
+
         Navigable navigable = getFileByName(fileName);
         if (navigable == null){
-            throw new FileNotFoundException(fileName + " was not found.");
+            navigable = getFolder(fileName);
+            if(navigable == null) {
+                System.out.println(fileName + " was not found.");
+                return;
+            }
+            navigable.setConfig(config);
         }else{
-            navigable.setConfig(new PermissionConfig(permission));
+            navigable.setConfig(config);
         }
     }
 
     public static void init() {
         root = new Folder(UserRepository.getCurrentUser(), "");
+        root.setConfig(new PermissionConfig(7,7,7));
         currentFolder = root;
     }
 

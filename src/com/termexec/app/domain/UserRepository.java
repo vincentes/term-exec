@@ -14,6 +14,14 @@ public class UserRepository {
         return user;
     }
 
+    public static User add(User user) {
+        users.add(user);
+        return user;
+    }
+
+
+
+
     public static boolean su(String username) {
         User user = find(username);
         if(user == null) {

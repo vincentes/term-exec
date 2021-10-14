@@ -43,6 +43,7 @@ public class CommandExecutor {
         }
 
         Command command = getCommand(tokens[0]);
+
         if(command == null) {
             return new Execution(CommandResult.INEXISTENT_COMMAND);
         }
@@ -50,6 +51,20 @@ public class CommandExecutor {
         if(tokens.length < command.getNumberOfArgs() + 1) {
             return new Execution(CommandResult.NOT_ENOUGH_ARGS, command);
         }
+
+        // Command permissions
+        switch(command) {
+            case USERADD:
+            case PASSWD:
+            case CHMOD:
+            case CHOWN:
+                if(!UserRepository.getCurrentUser().isAdmin()) {
+                    System.out.println(command.name().toLowerCase() + ": Permission denied");
+                    return new Execution(CommandResult.NOT_ROOT);
+                }
+                break;
+        }
+
 
         switch(command) {
             case USERADD:
@@ -77,8 +92,18 @@ public class CommandExecutor {
                 touch(tokens[1]);
                 break;
             case ECHO:
-                String content = line.split("\"")[1];
-                String path = line.split(" >> ")[1];
+                String[] contentTokens = line.split("\"");
+                if(contentTokens.length < 1) {
+                    return new Execution(CommandResult.NOT_ENOUGH_ARGS, command);
+                }
+
+                String content = contentTokens[1];
+                String[] pathTokens = line.split(" >> ");
+                if(pathTokens.length < 1) {
+                    return new Execution(CommandResult.NOT_ENOUGH_ARGS, command);
+                }
+
+                String path = pathTokens[1];
 //                path = path.split(".txt")[0];
                 echo(content, path);
                 break;
@@ -106,13 +131,67 @@ public class CommandExecutor {
             case CHMOD:
                 chmod(tokens[1],tokens[2]);
                 break;
+            case CP:
+                cp(tokens[1], tokens[2]);
+                break;
         }
+
         return new Execution(CommandResult.OK, command);
     }
 
+    private static void cp(String origin, String destination) {
+        File originFile = NavigableRepository.getFile(origin);
+        if(originFile == null) {
+            System.out.println("El archivo origen no existe.");
+            return;
+        }
+
+        if(UserRepository.getCurrentUser().equals(originFile.getAuthor())) {
+            if(!originFile.getConfig().canOwnerRead()) {
+                System.out.println("cp: " + originFile.getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!originFile.getConfig().canOthersRead()) {
+                System.out.println("cp: " + originFile.getName() + ": Permission denied");
+                return;
+            }
+        }
+
+        Folder destinationFolder = NavigableRepository.getFolder(destination);
+        if(destinationFolder == null) {
+            System.out.println("La carpeta destino no existe.");
+            return;
+        }
+
+        if(UserRepository.getCurrentUser().equals(destinationFolder.getAuthor())) {
+            if(!originFile.getConfig().canOwnerWrite()) {
+                System.out.println("cp: " + destinationFolder.getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!originFile.getConfig().canOthersWrite()) {
+                System.out.println("cp: " + destinationFolder.getName() + ": Permission denied");
+                return;
+            }
+        }
+
+        destinationFolder.addChild(originFile);
+    }
     private static void mv(String origin, String destination) {
         File originFile = NavigableRepository.getFile(origin);
-        System.out.println(originFile.toString());
+        if(UserRepository.getCurrentUser().equals(originFile.getAuthor())) {
+            if(!originFile.getConfig().canOwnerWrite()) {
+                System.out.println("mv: " + originFile.getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!originFile.getConfig().canOthersWrite()) {
+                System.out.println("mv: " + originFile.getName() + ": Permission denied");
+                return;
+            }
+        }
+
         if(originFile == null) {
             System.out.println("El archivo origen no existe.");
             return;
@@ -122,9 +201,23 @@ public class CommandExecutor {
             System.out.println("La carpeta destino no existe.");
             return;
         }
+
+        if(UserRepository.getCurrentUser().equals(destinationFolder.getAuthor())) {
+            if(!destinationFolder.getConfig().canOwnerWrite()) {
+                System.out.println("mv: " + destinationFolder.getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!destinationFolder.getConfig().canOthersWrite()) {
+                System.out.println("mv: " + destinationFolder.getName() + ": Permission denied");
+                return;
+            }
+        }
+
         originFile.getParent().remove(originFile);
         originFile.setParent(destinationFolder);
         destinationFolder.addChild(originFile);
+
 
     }
 
@@ -185,6 +278,19 @@ public class CommandExecutor {
     }
 
     private static void ls(String command) {
+        if(UserRepository.getCurrentUser().equals(NavigableRepository.getCurrentFolder().getAuthor())) {
+            if(!NavigableRepository.getCurrentFolder().getConfig().canOwnerRead()) {
+                System.out.println("ls: " + NavigableRepository.getCurrentFolder().getName() + ": Permission denied");
+                return;
+            }
+        } else {
+            if(!NavigableRepository.getCurrentFolder().getConfig().canOthersRead()) {
+                System.out.println("ls: " + NavigableRepository.getCurrentFolder().getName() + ": Permission denied");
+                return;
+            }
+        }
+
+
         if(command.equals("-l")) {
             for (Navigable node : NavigableRepository.ls()) {
                 System.out.println(node.getPermissions()
@@ -202,6 +308,7 @@ public class CommandExecutor {
     private static void cd(String path){ NavigableRepository.cd(path); }
 
     private static void useradd(String username) {
+
         User user = UserRepository.add(username);
         System.out.println("Usuario " + user.getUsername() + " creado con éxito.");
     }
@@ -270,12 +377,22 @@ public class CommandExecutor {
 
     private static void chmod(String permission, String file) {
         try {
-            int permissionInt = Integer.parseInt(permission.split("")[0]);
-            if(permission.split("").length != 3) {
+            String[] permissions = permission.split("");
+            if(permissions.length != 3) {
                 System.out.println("Debe ingresar los permisos correspondientes a usuario, grupo y directorio");
+                return;
             }
-            if(PermissionConfig.isOctalValue(permissionInt)) {
-                NavigableRepository.chmod(permissionInt, file);
+
+            String fileOwner = permissions[0];
+            String groupMembers = permissions[1];
+            String others = permissions[2];
+
+            int fileOwnerInt = Integer.parseInt(fileOwner);
+            int groupMembersInt = Integer.parseInt(groupMembers);
+            int othersInt = Integer.parseInt(others);
+
+            if(PermissionConfig.validateOctalValues(fileOwnerInt, groupMembersInt, othersInt)) {
+                NavigableRepository.chmod(fileOwnerInt, groupMembersInt, othersInt, file);
             } else {
                 System.out.println("Ingrese un permiso valido");
             }

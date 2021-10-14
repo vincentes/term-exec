@@ -14,7 +14,9 @@ public class Main {
 		// Args[0]
 		Scanner scanner = new Scanner(System.in);
 		boolean executing = true;
-		User user = UserRepository.add("root");
+		User user = new User("root", true);
+		user.setPassword("1234");
+		UserRepository.add(user);
 		UserRepository.su(user.getUsername());
 		NavigableRepository.init();
 		NavigableRepository.mkdir("a");
