@@ -175,8 +175,11 @@ public class CommandExecutor {
                 return;
             }
         }
-
-        destinationFolder.addChild(originFile);
+        File copy = new File(UserRepository.getCurrentUser());
+        copy.setName(originFile.getName());
+        copy.setContent(originFile.getContent());
+        copy.setParent(destinationFolder);
+        destinationFolder.addChild(copy);
     }
     private static void mv(String origin, String destination) {
         File originFile = NavigableRepository.getFile(origin);
