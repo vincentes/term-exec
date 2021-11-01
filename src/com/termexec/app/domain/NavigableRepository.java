@@ -180,12 +180,12 @@ public class NavigableRepository {
         File file = getFileByName(fileName);
 
         if(UserRepository.getCurrentUser().equals(file.getAuthor())) {
-            if(!file.getConfig().canOwnerRead() || !file.getConfig().canOwnerRead()) {
+            if(!file.getConfig().canOwnerRead()) {
                 System.out.println("cat: " + file.getName() + ": Permission denied");
                 return "";
             }
         } else {
-            if(!file.getConfig().canOthersRead() || !file.getConfig().canOthersExecute()) {
+            if(!file.getConfig().canOthersRead()) {
                 System.out.println("cat: " + file.getName() + ": Permission denied");
                 return "";
             }
